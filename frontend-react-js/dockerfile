@@ -1,5 +1,5 @@
-# Use the official Node.js image from the Docker Hub
-FROM node:14
+# Use an official Node.js runtime as a parent image
+FROM node:14-alpine
 
 # Set the working directory in the container
 WORKDIR /app
@@ -16,5 +16,9 @@ COPY . .
 # Expose the port that the React app runs on
 EXPOSE 3000
 
+# Set environment variables
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
+
 # Command to run the React application
-CMD ["sh", "-c", "BACKEND_URL=${BACKEND_URL} npm start"]
+CMD ["sh", "-c", "npm start"]

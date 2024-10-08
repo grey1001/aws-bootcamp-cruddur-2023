@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   backend:
     build:
@@ -9,10 +10,30 @@ services:
     environment:
       FLASK_APP: app.py
       FLASK_ENV: production
-      BACKEND_URL: http://localhost:5000
-      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: "*"  # Use service name instead of localhost
+      FRONTEND_URL: "*" # Use service name instead of localhost
+      OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${HONEYCOMB_API_KEY}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      HONEYCOMB_SERVICE_NAME: "Cruddur"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io:443"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14268/api/traces"
     volumes:
       - ./backend-flask:/app
+    networks:
+      - cruddur-network
+
+  frontend:
+    build:
+      context: ./frontend-react-js
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_BACKEND_URL: http://backend:5000  # Use service name instead of localhost
+    volumes:
+      - ./frontend-react-js:/app
+    networks:
+      - cruddur-network
 
   dynamodb-local:
     image: amazon/dynamodb-local
@@ -23,6 +44,8 @@ services:
       - dynamodb-data:/home/dynamodblocal
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
     working_dir: /home/dynamodblocal
+    networks:
+      - cruddur-network
 
   db:
     image: postgres:13-alpine
@@ -35,20 +58,29 @@ services:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - cruddur-network
 
-  frontend:
-    build:
-      context: ./frontend-react-js
-      dockerfile: Dockerfile
+  jaeger:
+    image: jaegertracing/all-in-one:1.22
     ports:
-      - "3000:3000"
-    environment:
-      BACKEND_URL: http://localhost:5000
-    volumes:
-      - ./frontend-react-js:/app
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    networks:
+      - cruddur-network
 
 volumes:
   db-data:
     driver: local
   dynamodb-data:
     driver: local
+
+networks:
+  cruddur-network:
+    driver: bridge
