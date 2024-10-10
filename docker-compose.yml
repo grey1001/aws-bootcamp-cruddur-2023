@@ -1,7 +1,19 @@
-version: '3.8'
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+    tag: "{{.Name}}"
+
+
+networks:
+  default:
+    name: cruddur
+    driver: bridge
 
 services:
   backend:
+    container_name: backend
     build:
       context: ./backend-flask
       dockerfile: Dockerfile
@@ -9,20 +21,18 @@ services:
       - "5000:5000"
     environment:
       FLASK_APP: app.py
-      FLASK_ENV: production
-      BACKEND_URL: "*"  # Use service name instead of localhost
+      FLASK_ENV: development  # Ensure Flask is in debug mode
+      BACKEND_URL: "http://backend"  # Use service name instead of localhost
       FRONTEND_URL: "*" # Use service name instead of localhost
-      OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${HONEYCOMB_API_KEY}
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      HONEYCOMB_SERVICE_NAME: "Cruddur"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io:443"
-      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14268/api/traces"
+      OTEL_SERVICE_NAME: "Cruddur"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otelcol:4317"
+      HONEYCOMB_API_KEY: ""  # Ensure this is set
     volumes:
       - ./backend-flask:/app
-    networks:
-      - cruddur-network
+    logging: *logging
 
   frontend:
+    container_name: frontend
     build:
       context: ./frontend-react-js
       dockerfile: Dockerfile
@@ -32,11 +42,11 @@ services:
       REACT_APP_BACKEND_URL: http://backend:5000  # Use service name instead of localhost
     volumes:
       - ./frontend-react-js:/app
-    networks:
-      - cruddur-network
+    logging: *logging
 
   dynamodb-local:
-    image: amazon/dynamodb-local
+    container_name: dynamodb-local
+    image: amazon/dynamodb-local:latest
     user: root
     ports:
       - "8000:8000"
@@ -44,10 +54,10 @@ services:
       - dynamodb-data:/home/dynamodblocal
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
     working_dir: /home/dynamodblocal
-    networks:
-      - cruddur-network
+    logging: *logging
 
   db:
+    container_name: db
     image: postgres:13-alpine
     restart: always
     environment:
@@ -58,22 +68,63 @@ services:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - cruddur-network
+    logging: *logging
+
+  otelcol:
+    container_name: otel-col
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317"  # OTLP gRPC receiver
+      - "4318"  # OTLP HTTP receiver
+    depends_on:
+      - jaeger
+    logging: *logging
 
   jaeger:
     image: jaegertracing/all-in-one:1.22
+    container_name: jaeger
+    command:
+      - "--memory.max-traces=5000"
+      - "--query.base-path=/jaeger/ui"
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+    restart: unless-stopped
     ports:
-      - "5775:5775/udp"
-      - "6831:6831/udp"
-      - "6832:6832/udp"
-      - "5778:5778"
-      - "16686:16686"
-      - "14268:14268"
-      - "14250:14250"
-      - "9411:9411"
-    networks:
-      - cruddur-network
+      - "16686"  # Jaeger UI
+      - "4317"  # OTLP gRPC
+    environment:
+      - METRICS_STORAGE_TYPE=prometheus
+      - COLLECTOR_OTLP_GRPC_HOST_PORT=jaeger:4317
+    logging: *logging
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --web.console.templates=/etc/prometheus/consoles
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --storage.tsdb.retention.time=1h
+      - --config.file=/etc/prometheus/prometheus-config.yaml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.route-prefix=/
+      - --enable-feature=exemplar-storage
+      - --enable-feature=otlp-write-receiver
+    volumes:
+      - ./prometheus-config.yaml:/etc/prometheus/prometheus-config.yaml
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    logging: *logging
 
 volumes:
   db-data:
@@ -81,6 +132,3 @@ volumes:
   dynamodb-data:
     driver: local
 
-networks:
-  cruddur-network:
-    driver: bridge
