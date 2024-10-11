@@ -2,6 +2,10 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+from aws_xray_sdk.core import xray_recorder
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+
+
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -15,6 +19,16 @@ from services.create_message import *
 from services.show_activity import *
 
 app = Flask(__name__)
+# X-Ray configuration
+xray_url = os.getenv('AWS_XRAY_URL', 'xray-daemon:2000')
+xray_recorder.configure(
+    service='backend-flask',
+    dynamic_naming=xray_url,
+    context_missing='LOG_ERROR',
+    daemon_address='xray-daemon:2000',  # This should match your X-Ray daemon service name in docker-compose
+    plugins=('ECSPlugin',)
+)
+XRayMiddleware(app, xray_recorder)
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
 origins = [frontend, backend]
