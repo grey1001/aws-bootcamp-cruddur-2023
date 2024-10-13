@@ -1,4 +1,7 @@
-version: '3.8'
+
+networks:
+  cruddur:
+    driver: bridge
 
 services:
   backend:
@@ -9,27 +12,32 @@ services:
       FLASK_APP: app.py
       FLASK_ENV: production
       BACKEND_URL: "http://backend:5000"
-      FRONTEND_URL: "http://frontend:3000"
-    volumes:
-      - ./backend-flask:/app
+      FRONTEND_URL: "*"
     ports:
       - "5000:5000"
+    volumes:
+      - ./backend-flask:/app
     networks:
-      - cruddur-network
+      - cruddur
 
   frontend:
     build:
       context: ./frontend-react-js
       dockerfile: Dockerfile
     environment:
-      REACT_APP_BACKEND_URL: http://backend:5000
+      REACT_APP_BACKEND_URL:  "http://backend:5000"
+    ports:
+      - "3000:80"
     volumes:
       - ./frontend-react-js:/app
     networks:
-      - cruddur-network
-    ports:
-      - "3000:3000"
+      - cruddur
 
-networks:
-  cruddur-network:
-    external: true
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   networks:
+  #     - cruddur

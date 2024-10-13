@@ -1,0 +1,84 @@
+# worker_processes auto;
+
+# events {
+#     worker_connections 1024;
+# }
+
+# http {
+#     include /etc/nginx/mime.types;
+#     default_type application/octet-stream;
+
+#     sendfile on;
+#     keepalive_timeout 65;
+
+#     server {
+#         listen 8080;
+#         server_name cruddur.greylabs.cloud;
+
+#         location / {
+#             proxy_pass http://frontend:3000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header X-Forwarded-Proto $scheme;
+#         }
+
+#         location /api/ {
+#             proxy_pass http://backend:5000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header X-Forwarded-Proto $scheme;
+#         }
+#     }
+
+#     server {
+#         listen 8443 ssl;
+#         server_name cruddur.greylabs.cloud;
+
+#         ssl_certificate /etc/letsencrypt/live/greylabs.cloud/fullchain.pem;
+#         ssl_certificate_key /etc/letsencrypt/live/greylabs.cloud/privkey.pem;
+
+#         location / {
+#             proxy_pass http://frontend:3000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header X-Forwarded-Proto $scheme;
+#         }
+
+#         location /api/ {
+#             proxy_pass http://backend:5000;
+#             proxy_set_header Host $host;
+#             proxy_set_header X-Real-IP $remote_addr;
+#             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#             proxy_set_header X-Forwarded-Proto $scheme;
+#         }
+#     }
+# }
+
+; events {
+;     worker_connections 1024;
+; }
+
+; http {
+;     server {
+;         listen 8081;
+
+;         location /api/ {
+;             proxy_pass http://127.0.0.1:5000/;
+;             proxy_set_header Host $host;
+;             proxy_set_header X-Real-IP $remote_addr;
+;             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+;             proxy_set_header X-Forwarded-Proto $scheme;
+;         }
+
+;         location / {
+;             proxy_pass http://127.0.0.1:3000/;
+;             proxy_set_header Host $host;
+;             proxy_set_header X-Real-IP $remote_addr;
+;             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+;             proxy_set_header X-Forwarded-Proto $scheme;
+;         }
+;     }
+; }
