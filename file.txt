@@ -1,0 +1,2 @@
+export HONEYCOMB_API_KEY="hcaik_01j9ntx6vwqwwzwxkat9q6p0sf3pg7y23keq0wwfb11cd0e0k9qm255frz"
+export HONEYCOMB_SERVICE_NAME="Cruddur"

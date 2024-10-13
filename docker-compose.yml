@@ -1,54 +1,54 @@
 version: '3.8'
 services:
-  backend:
+  backend-flask:
     build:
       context: ./backend-flask
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "4567:4567"
     environment:
       FLASK_APP: app.py
       FLASK_ENV: production
-      BACKEND_URL: http://localhost:5000
-      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: "http://localhost:4567"
+      FRONTEND_URL: "https://796a-92-92-163-117.ngrok-free.app"
     volumes:
       - ./backend-flask:/app
 
-  dynamodb-local:
-    image: amazon/dynamodb-local
-    user: root
-    ports:
-      - "8000:8000"
-    volumes:
-      - dynamodb-data:/home/dynamodblocal
-    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
-    working_dir: /home/dynamodblocal
+  # dynamodb-local:
+  #   image: amazon/dynamodb-local
+  #   user: root
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - dynamodb-data:/home/dynamodblocal
+  #   command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
+  #   working_dir: /home/dynamodblocal
 
-  db:
-    image: postgres:13-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: cruddr
-    ports:
-      - "5433:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
+  # db:
+  #   image: postgres:13-alpine
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: cruddr
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
 
-  frontend:
+  frontend-react-js:
     build:
       context: ./frontend-react-js
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      BACKEND_URL: http://localhost:5000
+      REACT_APP_BACKEND_URL: http://localhost:4567
     volumes:
       - ./frontend-react-js:/app
 
-volumes:
-  db-data:
-    driver: local
-  dynamodb-data:
-    driver: local
+# volumes:
+#   db-data:
+#     driver: local
+#   dynamodb-data:
+#     driver: local

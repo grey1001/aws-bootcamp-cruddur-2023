@@ -4,9 +4,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-
 ENV FLASK_ENV=production
-
-EXPOSE ${PORT}
+ENV FLASK_APP=app.py
+EXPOSE 4567
 
 CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=4567"]
