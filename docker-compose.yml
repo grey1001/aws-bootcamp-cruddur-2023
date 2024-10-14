@@ -11,7 +11,7 @@ services:
       FLASK_APP: app.py
       FLASK_ENV: production
       BACKEND_URL: "http://localhost:4567"  # Use service name instead of localhost
-      FRONTEND_URL: "https://796a-92-92-163-117.ngrok-free.app" # Use service name instead of localhost
+      FRONTEND_URL: "https://on-notable-starling.ngrok-free.app" # Use service name instead of localhost
       OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${HONEYCOMB_API_KEY}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       HONEYCOMB_SERVICE_NAME: "Cruddur"
@@ -19,8 +19,7 @@ services:
       OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14268/api/traces"
     volumes:
       - ./backend-flask:/app
-    networks:
-      - cruddur-network
+    
 
   frontend:
     build:
@@ -32,8 +31,7 @@ services:
       REACT_APP_BACKEND_URL: http://localhost:4567  # Use service name instead of localhost
     volumes:
       - ./frontend-react-js:/app
-    networks:
-      - cruddur-network
+    
 
   dynamodb-local:
     image: amazon/dynamodb-local
@@ -44,8 +42,7 @@ services:
       - dynamodb-data:/home/dynamodblocal
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
     working_dir: /home/dynamodblocal
-    networks:
-      - cruddur-network
+    
 
   db:
     image: postgres:13-alpine
@@ -58,8 +55,7 @@ services:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - cruddur-network
+   
 
   jaeger:
     image: jaegertracing/all-in-one:1.22
@@ -72,15 +68,10 @@ services:
       - "14268:14268"
       - "14250:14250"
       - "9411:9411"
-    networks:
-      - cruddur-network
+
 
 volumes:
   db-data:
     driver: local
   dynamodb-data:
     driver: local
-
-networks:
-  cruddur-network:
-    driver: bridge
