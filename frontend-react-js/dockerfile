@@ -1,24 +1,23 @@
-# Use an official Node.js runtime as a parent image
-FROM node:14-alpine
+# Use the official Node.js image from the Docker Hub
+FROM node:16.18
 
-# Set the working directory in the container
-WORKDIR /app
+# Set environment variable
+ENV PORT=3000
 
-# Copy the package.json and package-lock.json files into the container
-COPY package*.json ./
+# Set the working directory inside the container
+WORKDIR /frontend-react-js
 
-# Install the dependencies
+# Copy package.json and package-lock.json first to leverage Docker cache
+COPY package.json package-lock.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code into the container
+# Copy the rest of the application code
 COPY . .
 
-# Expose the port that the React app runs on
-EXPOSE 3000
+# Expose the port the app runs on
+EXPOSE ${PORT}
 
-# Set environment variables
-ARG REACT_APP_BACKEND_URL
-ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
-
-# Command to run the React application
-CMD ["sh", "-c", "npm start"]
+# Start the application
+CMD ["npm", "start"]

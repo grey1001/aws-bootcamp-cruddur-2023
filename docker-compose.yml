@@ -6,17 +6,15 @@ services:
       context: ./backend-flask
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "4567:4567"
     environment:
       FLASK_APP: app.py
       FLASK_ENV: production
-      BACKEND_URL: "*"
-      FRONTEND_URL: "*"
+      BACKEND_URL: "http://localhost:4567"  # Use service name instead of localhost
+      FRONTEND_URL: "https://on-notable-starling.ngrok-free.app" # Use service name instead of localhost
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
     volumes:
       - ./backend-flask:/app
-    networks:
-      - cruddur-network
     depends_on:
       - xray-daemon
 
@@ -34,8 +32,6 @@ services:
       - "eu-west-3"
     ports:
       - "2000:2000/udp"
-    networks:
-      - cruddur-network
 
   frontend:
     build:
@@ -44,11 +40,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_BACKEND_URL: http://backend:5000
+      REACT_APP_BACKEND_URL: http://localhost:4567  
     volumes:
       - ./frontend-react-js:/app
-    networks:
-      - cruddur-network
 
   dynamodb-local:
     image: amazon/dynamodb-local
@@ -59,8 +53,6 @@ services:
       - dynamodb-data:/home/dynamodblocal
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
     working_dir: /home/dynamodblocal
-    networks:
-      - cruddur-network
 
   db:
     image: postgres:13-alpine
@@ -73,15 +65,9 @@ services:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - cruddur-network
 
 volumes:
   db-data:
     driver: local
   dynamodb-data:
     driver: local
-
-networks:
-  cruddur-network:
-    driver: bridge
