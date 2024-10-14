@@ -6,12 +6,12 @@ services:
       context: ./backend-flask
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "4567:4567"
     environment:
       FLASK_APP: app.py
       FLASK_ENV: production
-      BACKEND_URL: "*"  # Use service name instead of localhost
-      FRONTEND_URL: "*" # Use service name instead of localhost
+      BACKEND_URL: "http://localhost:4567"  # Use service name instead of localhost
+      FRONTEND_URL: "https://796a-92-92-163-117.ngrok-free.app" # Use service name instead of localhost
       OTEL_EXPORTER_OTLP_HEADERS: x-honeycomb-team=${HONEYCOMB_API_KEY}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       HONEYCOMB_SERVICE_NAME: "Cruddur"
@@ -29,7 +29,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_BACKEND_URL: http://backend:5000  # Use service name instead of localhost
+      REACT_APP_BACKEND_URL: http://localhost:4567  # Use service name instead of localhost
     volumes:
       - ./frontend-react-js:/app
     networks:
