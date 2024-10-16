@@ -2,8 +2,24 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+
+## X-Ray
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+## CloudWatchLogs
+import watchtower, logging
+from time import strftime
+
+# Configuring the logger to send logs to CloudWatch
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
+logger.addHandler(console_handler)
+logger.addHandler(cw_handler)
+logger.info('HomeActivities')
+
+
 
 
 
@@ -39,6 +55,14 @@ cors = CORS(
   allow_headers="content-type,if-modified-since",
   methods="OPTIONS,GET,HEAD,POST"
 )
+
+# CloudWatchLogs configuration
+@app.after_request
+def after_request(response):
+  timestamp = strftime('[%Y-%b-%d %H:%M]')
+  logger.error('% s % s % s % s % s % s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
+  return response
+
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():

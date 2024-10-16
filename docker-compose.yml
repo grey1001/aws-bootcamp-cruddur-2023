@@ -12,6 +12,10 @@ services:
       FLASK_ENV: production
       BACKEND_URL: "http://localhost:4567"  # Use service name instead of localhost
       FRONTEND_URL: "https://on-notable-starling.ngrok-free.app" # Use service name instead of localhost
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_DEFAULT_REGION: "eu-west-3"
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
     volumes:
       - ./backend-flask:/app
