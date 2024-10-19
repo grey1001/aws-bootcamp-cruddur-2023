@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request
+from flask import request, got_request_exception
 from flask_cors import CORS, cross_origin
 import os
 
@@ -9,6 +9,11 @@ from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 ## CloudWatchLogs
 import watchtower, logging
 from time import strftime
+
+# Rollbar
+import rollbar
+import rollbar.contrib.flask
+
 
 # Configuring the logger to send logs to CloudWatch
 logger = logging.getLogger(__name__)
@@ -62,6 +67,19 @@ def after_request(response):
   timestamp = strftime('[%Y-%b-%d %H:%M]')
   logger.error('% s % s % s % s % s % s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
   return response
+
+# Rollbar configuration
+rollbar_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
+rollbar.init(
+  rollbar_token,
+  'production',
+  root=os.path.dirname(os.path.realpath(__file__)),
+  allow_logging_basic_config=False
+)
+@app.route('/rollbar/test/')
+def rollbar_test():
+  rollbar.report_message('Hello, world!', 'warning')
+  return 'Hello, world!'
 
 
 @app.route("/api/message_groups", methods=['GET'])

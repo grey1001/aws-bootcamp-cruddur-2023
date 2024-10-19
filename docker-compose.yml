@@ -17,6 +17,7 @@ services:
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       AWS_DEFAULT_REGION: "eu-west-3"
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+      ROLLBAR_ACCESS_TOKEN: ${ROLLBAR_ACCESS_TOKEN}
     volumes:
       - ./backend-flask:/app
     depends_on:
