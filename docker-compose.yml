@@ -50,7 +50,6 @@ services:
       REACT_APP_AWS_COGNITO_REGION: "${REACT_APP_AWS_COGNITO_REGION}"
       REACT_APP_AWS_USER_POOLS_ID: "${REACT_APP_AWS_USER_POOLS_ID}"
       REACT_APP_CLIENT_ID: "3haf4utb8t19b5fpbnq4tanp9b"
-      REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID: "3haf4utb8t19b5fpbnq4tanp9b"
     volumes:
       - ./frontend-react-js:/app
 
