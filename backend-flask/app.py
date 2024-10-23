@@ -1,3 +1,4 @@
+from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
 from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
@@ -34,7 +35,19 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 
+from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
+
 app = Flask(__name__)
+
+cognito_jwt_token = CognitoJwtToken(
+    user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"),
+    user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+    region=os.getenv("AWS_DEFAULT_REGION")
+)
+
+
+
+
 # X-Ray configuration
 xray_url = os.getenv('AWS_XRAY_URL', 'xray-daemon:2000')
 xray_recorder.configure(
@@ -99,9 +112,22 @@ def data_create_message():
     return model['data'], 200
   return
 
+
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  data = HomeActivities.run()
+  access_token = extract_access_token(request.headers)
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    # authenticated request
+    app.logger.debug("authenticated")
+    app.logger.debug(claims)
+    app.logger.debug(claims['username'])
+    data = HomeActivities.run(cognito_user_id=claims['username'])
+  except TokenVerifyError as e:
+    # unauthenticated request
+    app.logger.debug(e)
+    app.logger.debug("authenticated")
+    data = HomeActivities.run()
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])

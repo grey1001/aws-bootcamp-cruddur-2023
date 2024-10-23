@@ -46,10 +46,10 @@ services:
     environment:
       environment:
       REACT_APP_BACKEND_URL: http://localhost:4567
-      REACT_AWS_PROJECT_REGION: "${REACT_AWS_PROJECT_REGION}"
-      REACT_APP_AWS_COGNITO_REGION: "${REACT_APP_AWS_COGNITO_REGION}"
-      REACT_APP_AWS_USER_POOLS_ID: "${REACT_APP_AWS_USER_POOLS_ID}"
-      REACT_APP_CLIENT_ID: "3haf4utb8t19b5fpbnq4tanp9b"
+      REACT_AWS_PROJECT_REGION: "eu-west-3"
+      REACT_APP_AWS_COGNITO_REGION: "eu-west-3"
+      REACT_APP_AWS_USER_POOLS_ID: "eu-west-3_n1a9kJQOW"
+      REACT_APP_CLIENT_ID: "7gppnbtttmfu89dor1gj1lrulg"
     volumes:
       - ./frontend-react-js:/app
 
