@@ -2,3 +2,4 @@ flask
 flask-cors
 aws-xray-sdk
 watchtower
+Flask-AWSCognito

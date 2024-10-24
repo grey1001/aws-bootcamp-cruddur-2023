@@ -17,6 +17,8 @@ services:
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
       AWS_DEFAULT_REGION: "eu-west-3"
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+      AWS_COGNITO_USER_POOL_ID: "eu-west-3_n1a9kJQOW"
+      AWS_COGNITO_USER_POOL_CLIENT_ID: "7gppnbtttmfu89dor1gj1lrulg"
     volumes:
       - ./backend-flask:/app
     depends_on:
